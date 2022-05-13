@@ -1,0 +1,26 @@
+The semantics of a language are defined in a .sem file, which consists of type
+and relation definitions.
+
+A type declaration has the form
+  type a ::= | t [| t']*
+where a is a single lowercase character in {a..z}, t and t' are syntactic
+structures, and [| t']* means 0 or more repetitions of | t'. t and t' can be any
+strings, but a single lowecase alphabetic character followed by any number of
+digits and apostrophies will always be treated as a user defined type and any of
+Bool, Int, Float, String, and Map a1 -> a2 will be treated as their
+corresponding Ocaml types (Map is an assoc list).
+
+An example type declaration is 
+  type e ::=
+    | (e)
+    | String
+    | lambda String. e
+    | e1 e2
+
+A relation definition has the form
+  rel fun a -> b
+  { f a1 = b1 [if c1 = c2 [and c1' = c2']*] 
+ [, f a1 = b1 [if c1 = c2 [and c1' = c2']*]]*
+  }
+where f is a lowercase alphanumeric string starting with a letter which may also
+contain ' or _, a and b are types (user-defined or built-in), a1 is either 

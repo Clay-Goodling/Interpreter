@@ -1,0 +1,30 @@
+contype e ::=
+  | E0 ( e )
+  | Var ID
+  | Abs lambda ID . e
+  | App e e
+
+abstype c ::=
+  | Config e
+
+abstype s ::=
+  | Sub e{ID / e}
+
+
+rel init e -> c
+{ e -> Config e
+}
+
+rel sub s -> e
+{ Sub (Var x', x, e2) -> e2 when true = eq x x'
+; Sub (Abs (x', e'), x, e2) -> Abs (x', e') when true = eq x x'
+; Sub (Abs (x', e'), x, e2) -> Abs (x', e'') when false = eq x x' and e'' = sub (Sub (e', x, e2))
+; Sub (App (e1, e2), x, e3) -> App (e1', e2') when e1' = sub (Sub (e1, x, e3)) and e2' = sub (Sub (e2, x, e3))
+}
+
+rel step c -> c
+{ Config (E0 e) -> Config e
+; Config (App (e1, e2)) -> Config (App (e1', e2)) when Config e1' = step (Config e1)
+; Config (App (Abs (x, e1), e2)) -> Config (App (Abs (x, e1), e2')) when Config e2' = step (Config e2)
+; Config (App (Abs (x1, e1), Abs (x2, e2))) -> Config e1' when e1' = sub (Sub (e1, x1, Abs (x2, e2)))
+}

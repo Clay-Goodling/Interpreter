@@ -1,0 +1,33 @@
+contype e ::=
+  | E0 (e)
+  | EVar ID
+  | EInt Int
+  | ESum e + e
+  | EMul e * e
+  | EBind ID := e; e
+  | EPrint print e
+
+abstype s ::=
+  | Store Map (ID, Int)
+
+abstype c ::=
+  | Config (s, e)
+  
+rel init e -> c
+{ e -> Config (Store [], e)
+}
+
+rel step c -> c
+{ Config (s, E0 e)                         ->  Config (s, e)
+; Config (Store s, EVar x)                 ->  Config (Store s, EInt n)         when  n = index x s
+; Config (s, ESum (e1, e2))                ->  Config (s', ESum (e1', e2))      when  Config (s', e1') = step (Config (s, e1))
+; Config (s, ESum (EInt n, e2))            ->  Config (s', ESum (EInt n, e2'))  when  Config (s', e2') = step (Config (s, e2))
+; Config (s, ESum (EInt n1, EInt n2))      ->  Config (s, EInt n3)              when  n3 = addi n1 n2
+; Config (s, EMul (e1, e2))                ->  Config (s', EMul (e1', e2))      when  Config (s', e1') = step (Config (s, e1))
+; Config (s, EMul (EInt n, e2))            ->  Config (s', EMul (EInt n, e2'))  when  Config (s', e2') = step (Config (s, e2))
+; Config (s, EMul (EInt n1, EInt n2))      ->  Config (s, EInt n3)              when  n3 = muli n1 n2
+; Config (s, EBind (x, e1, e2))            ->  Config (s', EBind (x, e1', e2))  when  Config (s', e1') = step (Config (s, e1))
+; Config (Store s, EBind (x, EInt n, e2))  ->  Config (Store s', e2)            when  s' = bind s x n
+; Config (s, EPrint e)                     ->  Config (s', EPrint e')           when  Config (s', e') = step (Config (s, e))
+; Config (s, EPrint EInt n)                ->  Config (s, EInt n')              when  n' = printi n
+}
